@@ -2,152 +2,181 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Birthday Surprise 💖</title>
+<title>For You 💖</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Confetti -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
-
-body {
-  margin: 0;
-  height: 100vh;
-  font-family: 'Poppins', sans-serif;
-  background: radial-gradient(circle at top, #ffd1dc, #ff9eb5);
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+*{
+  box-sizing:border-box;
+}
+body{
+  margin:0;
+  height:100vh;
+  font-family:'Poppins',sans-serif;
+  background: linear-gradient(-45deg,#ff9a9e,#fad0c4,#fbc2eb,#a6c1ee);
+  background-size:400% 400%;
+  animation:bgMove 10s ease infinite;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
 }
 
-.container {
-  text-align: center;
-  color: #fff;
-  padding: 20px;
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
 }
 
-h1 {
-  font-size: 2.4rem;
-  font-weight: 700;
-  text-shadow: 0 8px 25px rgba(0,0,0,0.25);
-  animation: glow 2s infinite alternate;
+.card{
+  width:90%;
+  max-width:380px;
+  padding:30px 20px;
+  border-radius:25px;
+  background:rgba(255,255,255,0.18);
+  backdrop-filter:blur(18px);
+  box-shadow:0 25px 60px rgba(0,0,0,0.25);
+  text-align:center;
+  color:#fff;
+  animation:fadeIn 1.5s ease;
 }
 
-@keyframes glow {
-  from { text-shadow: 0 0 10px #fff; }
-  to { text-shadow: 0 0 25px #ff5f9e; }
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
 }
 
-.subtitle {
-  margin-top: 8px;
-  font-size: 1rem;
-  opacity: 0.9;
+h1{
+  font-size:2.1rem;
+  font-weight:700;
+  text-shadow:0 10px 30px rgba(0,0,0,0.3);
 }
 
-.cake {
-  font-size: 130px;
-  margin: 25px 0 10px;
-  cursor: pointer;
-  animation: float 2.5s ease-in-out infinite;
+.sub{
+  font-size:0.95rem;
+  opacity:0.9;
+  margin-bottom:20px;
 }
 
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+.cake{
+  font-size:120px;
+  cursor:pointer;
+  animation:float 2.5s ease-in-out infinite;
 }
 
-.tap {
-  font-size: 0.9rem;
-  opacity: 0.85;
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-18px)}
 }
 
-.love {
-  margin-top: 25px;
-  font-size: 1.9rem;
-  font-weight: 600;
-  display: none;
-  animation: pop 0.8s ease forwards;
+.tap{
+  font-size:0.85rem;
+  opacity:0.85;
 }
 
-@keyframes pop {
-  from { opacity: 0; transform: scale(0.4); }
-  to { opacity: 1; transform: scale(1); }
+.message{
+  margin-top:25px;
+  font-size:1.6rem;
+  font-weight:600;
+  display:none;
 }
 
-.heart {
-  position: absolute;
-  font-size: 20px;
-  animation: rise linear infinite;
-  opacity: 0.8;
+.heart{
+  position:absolute;
+  font-size:18px;
+  animation:rise linear infinite;
 }
 
-@keyframes rise {
-  from { transform: translateY(100vh); }
-  to { transform: translateY(-10vh); }
+@keyframes rise{
+  from{transform:translateY(110vh);opacity:1}
+  to{transform:translateY(-10vh);opacity:0}
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="card">
   <h1>Happy Birthday<br>Kichu Darling 😘🎂</h1>
-  <div class="subtitle">You make my world magical 💖</div>
+  <div class="sub">You make my world magical 💖</div>
 
-  <div class="cake" onclick="celebrate()">🎂</div>
-  <div class="tap">Tap the cake cutie 🥺👉🎂</div>
+  <div class="cake" onclick="startLove()">🎂</div>
+  <div class="tap">Tap the cake to unlock 💫</div>
 
-  <div class="love" id="loveText">
-    I love uhh sooo muchhh 😘💖✨
-  </div>
+  <div class="message" id="msg"></div>
 </div>
 
-<!-- Music -->
+<!-- MUSIC -->
 <audio id="music" loop>
   <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6c1d2c2c41.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-function celebrate() {
+let played=false;
+const text="I love uhh sooo muchhh 😘💖✨";
 
-  // music play (browser safe)
-  const m = document.getElementById("music");
+function startLove(){
+  if(!played){
+    fadeMusic();
+    fireworks();
+    typeText();
+    played=true;
+  }
+}
+
+function fadeMusic(){
+  const m=document.getElementById("music");
+  m.volume=0;
   m.play();
+  let v=0;
+  const fade=setInterval(()=>{
+    if(v<0.9){
+      v+=0.05;
+      m.volume=v;
+    }else{
+      clearInterval(fade);
+    }
+  },200);
+}
 
-  // show love text
-  document.getElementById("loveText").style.display = "block";
+function fireworks(){
+  confetti({particleCount:250,spread:120,origin:{y:0.6}});
+  setTimeout(()=>{
+    confetti({particleCount:150,spread:360,startVelocity:45,origin:{x:Math.random(),y:Math.random()*0.5}});
+  },600);
+}
 
-  // confetti blast
-  confetti({
-    particleCount: 300,
-    spread: 120,
-    origin: { y: 0.6 }
-  });
-
-  // extra fireworks
-  setTimeout(() => {
-    confetti({
-      particleCount: 150,
-      spread: 360,
-      startVelocity: 40,
-      origin: { x: Math.random(), y: Math.random() * 0.5 }
-    });
-  }, 500);
+function typeText(){
+  const el=document.getElementById("msg");
+  el.style.display="block";
+  let i=0;
+  el.innerHTML="";
+  const t=setInterval(()=>{
+    if(i<text.length){
+      el.innerHTML+=text.charAt(i);
+      i++;
+    }else{
+      clearInterval(t);
+    }
+  },70);
 }
 
 // floating hearts
-setInterval(() => {
-  const heart = document.createElement("div");
-  heart.className = "heart";
-  heart.innerHTML = "💖";
-  heart.style.left = Math.random() * 100 + "vw";
-  heart.style.animationDuration = (4 + Math.random() * 3) + "s";
-  document.body.appendChild(heart);
-
-  setTimeout(() => heart.remove(), 7000);
-}, 400);
+setInterval(()=>{
+  const h=document.createElement("div");
+  h.className="heart";
+  h.innerHTML="💖";
+  h.style.left=Math.random()*100+"vw";
+  h.style.animationDuration=(4+Math.random()*3)+"s";
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),7000);
+},350);
 </script>
 
 </body>
