@@ -8,91 +8,110 @@
 <!-- Confetti -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-<!-- Google Font -->
+<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 body{
   margin:0;
   height:100vh;
   font-family:'Poppins',sans-serif;
-  background: linear-gradient(-45deg,#ff9a9e,#fad0c4,#fbc2eb,#a6c1ee);
-  background-size:400% 400%;
-  animation:bgMove 10s ease infinite;
+  background:linear-gradient(135deg,#2b0a3d,#5a0f3c,#8b1e3f);
   display:flex;
   justify-content:center;
   align-items:center;
   overflow:hidden;
+  color:#fff;
 }
 
-@keyframes bgMove{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+/* MUSIC UNLOCK OVERLAY */
+#musicLock{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(135deg,#2b0a3d,#8b1e3f);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+.lockCard{
+  padding:26px 32px;
+  border-radius:26px;
+  background:rgba(255,255,255,0.18);
+  backdrop-filter:blur(16px);
+  text-align:center;
+  box-shadow:0 25px 60px rgba(0,0,0,0.5);
+  animation:pulse 1.5s infinite;
+}
+@keyframes pulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.06)}
+  100%{transform:scale(1)}
 }
 
+/* MAIN CARD */
 .card{
   width:90%;
   max-width:380px;
   padding:30px 20px;
-  border-radius:25px;
-  background:rgba(255,255,255,0.18);
+  border-radius:30px;
+  background:rgba(255,255,255,0.15);
   backdrop-filter:blur(18px);
-  box-shadow:0 25px 60px rgba(0,0,0,0.25);
+  box-shadow:0 30px 70px rgba(0,0,0,0.45);
   text-align:center;
-  color:#fff;
-  animation:fadeIn 1.5s ease;
 }
-
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
 h1{
   font-size:2.1rem;
   font-weight:700;
-  text-shadow:0 10px 30px rgba(0,0,0,0.3);
+  text-shadow:0 10px 30px rgba(0,0,0,0.45);
 }
-
 .sub{
   font-size:0.95rem;
   opacity:0.9;
-  margin-bottom:20px;
+  margin-bottom:18px;
 }
 
+/* CAKE */
 .cake{
   font-size:120px;
+  margin:20px 0;
   cursor:pointer;
   animation:float 2.5s ease-in-out infinite;
 }
-
 @keyframes float{
   0%,100%{transform:translateY(0)}
   50%{transform:translateY(-18px)}
 }
-
 .tap{
-  font-size:0.85rem;
-  opacity:0.85;
+  font-size:.85rem;
+  opacity:.85;
 }
 
-.message{
-  margin-top:25px;
-  font-size:1.6rem;
-  font-weight:600;
+/* SURPRISE */
+.surprise{
   display:none;
+  margin-top:18px;
+  font-size:2.2rem;
+  animation:pop .8s ease forwards;
+}
+@keyframes pop{
+  from{transform:scale(.4);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+.message{
+  display:none;
+  margin-top:14px;
+  font-size:1.5rem;
+  font-weight:600;
 }
 
+/* HEARTS */
 .heart{
   position:absolute;
   font-size:18px;
   animation:rise linear infinite;
 }
-
 @keyframes rise{
   from{transform:translateY(110vh);opacity:1}
   to{transform:translateY(-10vh);opacity:0}
@@ -102,69 +121,61 @@ h1{
 
 <body>
 
+<!-- MUSIC UNLOCK -->
+<div id="musicLock" onclick="unlockMusic()">
+  <div class="lockCard">
+    💖 Tap to start the surprise 💖<br>
+    <small>(music on 🎶)</small>
+  </div>
+</div>
+
 <div class="card">
   <h1>Happy Birthday<br>Kichu Darling 😘🎂</h1>
   <div class="sub">You make my world magical 💖</div>
 
-  <div class="cake" onclick="startLove()">🎂</div>
-  <div class="tap">Tap the cake to unlock 💫</div>
+  <div class="cake" onclick="celebrate()">🎂</div>
+  <div class="tap">Tap the cake for surprise 💫</div>
 
-  <div class="message" id="msg"></div>
+  <div class="surprise" id="gift">💐 🤗 🧸</div>
+  <div class="message" id="msg">I love uhh sooo muchhh 😘💖✨</div>
 </div>
 
-<!-- MUSIC -->
-<audio id="music" loop>
-  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6c1d2c2c41.mp3" type="audio/mpeg">
+<!-- AUDIO -->
+<audio id="bg" loop>
+  <source src="https://cdn.pixabay.com/download/audio/2023/03/27/audio_58b02b7e6a.mp3" type="audio/mpeg">
+</audio>
+<audio id="pop">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_0a1e5c3a8a.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-let played=false;
-const text="I love uhh sooo muchhh 😘💖✨";
+let unlocked=false;
+let done=false;
 
-function startLove(){
-  if(!played){
-    fadeMusic();
-    fireworks();
-    typeText();
-    played=true;
-  }
-}
-
-function fadeMusic(){
-  const m=document.getElementById("music");
-  m.volume=0;
-  m.play();
+function unlockMusic(){
+  const bg=document.getElementById("bg");
+  bg.volume=0;
+  bg.play();
   let v=0;
   const fade=setInterval(()=>{
-    if(v<0.9){
-      v+=0.05;
-      m.volume=v;
-    }else{
-      clearInterval(fade);
-    }
+    if(v<0.8){v+=0.05;bg.volume=v}else clearInterval(fade);
   },200);
+  document.getElementById("musicLock").style.display="none";
+  unlocked=true;
 }
 
-function fireworks(){
-  confetti({particleCount:250,spread:120,origin:{y:0.6}});
+function celebrate(){
+  if(done || !unlocked) return;
+  done=true;
+
+  document.getElementById("gift").style.display="block";
+  document.getElementById("msg").style.display="block";
+  document.getElementById("pop").play();
+
+  confetti({particleCount:250,spread:120,origin:{y:.6}});
   setTimeout(()=>{
-    confetti({particleCount:150,spread:360,startVelocity:45,origin:{x:Math.random(),y:Math.random()*0.5}});
+    confetti({particleCount:150,spread:360,startVelocity:40,origin:{x:Math.random(),y:Math.random()*0.5}});
   },600);
-}
-
-function typeText(){
-  const el=document.getElementById("msg");
-  el.style.display="block";
-  let i=0;
-  el.innerHTML="";
-  const t=setInterval(()=>{
-    if(i<text.length){
-      el.innerHTML+=text.charAt(i);
-      i++;
-    }else{
-      clearInterval(t);
-    }
-  },70);
 }
 
 // floating hearts
